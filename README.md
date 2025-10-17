@@ -52,6 +52,7 @@ $ source venv/bin/activate
 $ pip install -r requirements.txt 
 
 ##🏗️ Структура проекта
+```bash
 Project-weather/
 │
 ├── app/
@@ -74,7 +75,7 @@ Project-weather/
 ├── main.py # Точка входа
 ├── README.md
 └── requirements.txt
-
+```
 
 ##📞 Контакты
 git - https://github.com/ViktorLamba
