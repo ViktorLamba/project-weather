@@ -35,14 +35,17 @@
 ## Установка
 
 **Клонируйте репозиторий**:
-
-git clone <URL-репозитория>
-cd Project-weather
+```bash
+$ git clone <URL-репозитория>
+$ cd Project-weather
+```
 
 ### Создание виртуального окружения (Linux)
 
+```bash
 $ python -m venv venv
 $ source venv/bin/activate
+```
 
 ### Установка зависимосткей
 
