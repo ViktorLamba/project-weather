@@ -68,7 +68,18 @@ body {
     margin-bottom: 15px;
 }
 
-#city-input {
+.coordinates-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.coord-inputs {
+    display: flex;
+    gap: 10px;
+}
+
+.coord-inputs input {
     flex: 1;
     padding: 15px 20px;
     border: 2px solid #e0e0e0;
@@ -77,10 +88,28 @@ body {
     transition: all 0.3s ease;
 }
 
-#city-input:focus {
+#city-input, #lat-input, #lon-input {
+    flex: 1;
+    padding: 15px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+#city-input:focus, #lat-input:focus, #lon-input:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Стили для невалидного ввода */
+#lat-input:invalid, #lon-input:invalid {
+    border-color: #e74c3c;
+}
+
+#lat-input:valid, #lon-input:valid {
+    border-color: #2ecc71;
 }
 
 button {
@@ -93,11 +122,21 @@ button {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
 button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Специфичные стили для кнопки координат */
+.coordinates-group button {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.coordinates-group button:hover {
+    background: linear-gradient(135deg, #e668a7, #f093fb);
 }
 
 .examples {
@@ -133,6 +172,7 @@ button:hover {
     text-decoration: none;
     transition: all 0.3s ease;
     cursor: pointer;
+    text-align: center;
 }
 
 .city-btn:hover {
@@ -141,6 +181,19 @@ button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
     text-decoration: none;
+}
+
+/* Специфичные стили для кнопок координат в примерах */
+.city-btn[href*="lat"] {
+    background: rgba(240, 147, 251, 0.1);
+    color: #f5576c;
+    border-color: #f5576c;
+}
+
+.city-btn[href*="lat"]:hover {
+    background: #f5576c;
+    color: white;
+    box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
 }
 
 .loading {
@@ -483,6 +536,10 @@ button:hover {
         flex-direction: column;
     }
     
+    .coord-inputs {
+        flex-direction: column;
+    }
+    
     .example-cities {
         flex-direction: column;
         align-items: center;
@@ -540,5 +597,9 @@ button:hover {
     
     .weather-detail-page .weather-main {
         margin: 20px 0;
+    }
+    
+    button {
+        width: 100%;
     }
 }

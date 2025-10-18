@@ -1,4 +1,4 @@
-"""Simple Flask application to find cities using Open-Meteo API."""
+"""Получение погоды."""
 from flask import Blueprint, jsonify, request, render_template
 import requests
 
@@ -21,48 +21,97 @@ CITY_COORDINATES = {
 @weather.route('/weather-page', methods=['GET'])
 def weather_page():
     """Страница с фронтендом для просмотра погоды."""
-    city = request.args.get('city', 'Moscow')
-    return render_template('weather.html', city=city)  
+    city = request.args.get('city')
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+
+    return render_template('weather.html', city=city, lat=lat, lon=lon)
 
 
 @weather.route('/weather', methods=['GET'])
 def get_weather():
-    """Получение погоды для заданного города."""
+    """Получение погоды для заданного города или координат."""
     try:
-        city_name = request.args.get('city', 'Moscow')
-        
-        # Получаем координаты города
-        city_coords = find_city_coordinates(city_name)
-        if not city_coords:
-            return jsonify({'status': 1, 'error': f'Город "{city_name}" не найден'}), 404
-        
-        # Получаем погоду
-        weather_data = get_weather_from_openmeteo(city_coords['lat'], city_coords['lon'])
-        
-        formatted_data = {
-            'name': city_coords['name'],
-            'sys': {'country': city_coords['country']},
-            'main': {
-                'temp': weather_data['current_temp'],
-                'feels_like': weather_data['current_temp'],
-                'temp_min': weather_data['min_temp'],
-                'temp_max': weather_data['max_temp'],
-                'humidity': 65
-            },
-            'weather': [{
-                'description': weather_data['weather_description'],
-                'main': get_weather_main(weather_data['weather_code'])
-            }],
-            'wind': {
-                'speed': weather_data['wind_speed']
-            },
-            'coord': {
-                'lat': city_coords['lat'],
-                'lon': city_coords['lon']
-            }
-        }
+        city_name = request.args.get('city')
+        lat = request.args.get('lat')
+        lon = request.args.get('lon')
 
-        return jsonify({'status': 0, 'data': formatted_data}), 200, {'Content-Type': 'application/json'}
+        if lat and lon:
+            try:
+                lat_float = float(lat)
+                lon_float = float(lon)
+
+                if not (-90 <= lat_float <= 90) or not (-180 <= lon_float <= 180):
+                    return jsonify({'status': 1, 'error': 'Неверные координаты'}), 400
+
+                weather_data = get_weather_from_openmeteo(lat_float, lon_float)
+
+                city_name_from_coords = get_city_name(lat_float, lon_float)
+
+                formatted_data = {
+                    'name': city_name_from_coords,
+                    'sys': {'country': 'N/A'},
+                    'main': {
+                        'temp': weather_data['current_temp'],
+                        'feels_like': weather_data['current_temp'],
+                        'temp_min': weather_data['min_temp'],
+                        'temp_max': weather_data['max_temp'],
+                        'humidity': 65
+                    },
+                    'weather': [{
+                        'description': weather_data['weather_description'],
+                        'main': get_weather_main(weather_data['weather_code'])
+                    }],
+                    'wind': {
+                        'speed': weather_data['wind_speed']
+                    },
+                    'coord': {
+                        'lat': lat_float,
+                        'lon': lon_float
+                    }
+                }
+
+                return jsonify({'status': 0, 'data': formatted_data})
+
+            except ValueError:
+                return jsonify({'status': 1, 'error': 'Координаты должны быть числами'}), 400
+
+        # Если передан город, ищем по названию
+        elif city_name and city_name != 'None':
+            city_coords = find_city_coordinates(city_name)
+            if not city_coords:
+                return jsonify({'status': 1, 'error': f'Город "{city_name}" не найден'}), 404
+
+            weather_data = get_weather_from_openmeteo(city_coords['lat'],
+                                                      city_coords['lon'])
+
+            formatted_data = {
+                'name': city_coords['name'],
+                'sys': {'country': city_coords['country']},
+                'main': {
+                    'temp': weather_data['current_temp'],
+                    'feels_like': weather_data['current_temp'],
+                    'temp_min': weather_data['min_temp'],
+                    'temp_max': weather_data['max_temp'],
+                    'humidity': 65
+                },
+                'weather': [{
+                    'description': weather_data['weather_description'],
+                    'main': get_weather_main(weather_data['weather_code'])
+                }],
+                'wind': {
+                    'speed': weather_data['wind_speed']
+                },
+                'coord': {
+                    'lat': city_coords['lat'],
+                    'lon': city_coords['lon']
+                }
+            }
+
+            return jsonify({'status': 0, 'data': formatted_data})
+
+        else:
+            return jsonify({'status': 1, 'error': 'Укажите название города или координаты'}), 400
 
     except Exception as e:
         return jsonify({'status': 1, 'error': str(e)}), 500
@@ -70,9 +119,11 @@ def get_weather():
 
 def find_city_coordinates(s_city):
     """Поиск координат города по названию."""
+    if not s_city or s_city == 'None':
+        return None
+
     city_lower = s_city.lower().strip()
 
-    # Ищем названия городов
     for city_key, coords in CITY_COORDINATES.items():
         if city_lower in city_key or city_key in city_lower:
             return coords
@@ -113,6 +164,59 @@ def get_weather_from_openmeteo(lat, lon):
 
     except Exception as e:
         raise Exception(f'Ошибка получения погоды: {str(e)}')
+
+
+def get_city_name(lat, lon):
+    """Получение названия города по координатам."""
+    try:
+        url = "https://nominatim.openstreetmap.org/reverse"
+        params = {
+            'lat': lat,
+            'lon': lon,
+            'format': 'json',
+            'accept-language': 'ru',
+            'addressdetails': 1,
+            'zoom': 10
+        }
+
+        # Добавляем правильные заголовки для Nominatim
+        headers = {
+            'User-Agent': 'WeatherApp/1.0 (your-email@example.com)',
+            'Accept': 'application/json'
+        }
+
+        response = requests.get(url,
+                                params=params,
+                                headers=headers,
+                                timeout=10)
+
+        response.raise_for_status()
+        data = response.json()
+
+        if data.get('address'):
+            address = data['address']
+
+            # Ищем название города в разных полях
+            city_name = (
+                address.get('city') or
+                address.get('town') or
+                address.get('village') or
+                address.get('municipality') or
+                address.get('county') or
+                address.get('state') or
+                address.get('region')
+            )
+
+            if city_name:
+                return city_name
+
+        # Если город не найден, возвращаем координаты
+        result = f"Координаты ({lat:.2f}, {lon:.2f})"
+        return result
+
+    except Exception:
+        result = f"Координаты ({lat:.2f}, {lon:.2f})"
+        return result
 
 
 def get_weather_description(code):

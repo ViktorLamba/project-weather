@@ -6,7 +6,11 @@
         <a href="/">← Назад к поиску</a>
     </div>
 
-    <h1>🌤️ Погода в городе: <span id="current-city">{{ city }}</span></h1>
+    <h1>🌤️ Погода: <span id="current-city">
+        {% if city and city != 'None' %}{{ city }}
+        {% elif lat and lon and lat != 'None' and lon != 'None' %}Координаты: {{ lat }}, {{ lon }}
+        {% else %}Загрузка...{% endif %}
+    </span></h1>
 
     <div id="loading" class="loading">
         <div class="spinner"></div>
@@ -25,10 +29,20 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const city = "{{ city }}";
-    loadWeatherData(city);
+    const lat = "{{ lat }}";
+    const lon = "{{ lon }}";
+    
+    // Определяем тип запроса
+    if (lat && lon && lat !== 'None' && lon !== 'None') {
+        loadWeatherByCoords(lat, lon);
+    } else if (city && city !== 'None') {
+        loadWeatherByCity(city);
+    } else {
+        showError('Не указаны параметры для поиска');
+    }
 });
 
-async function loadWeatherData(city) {
+async function loadWeatherByCity(city) {
     const loading = document.getElementById('loading');
     const weatherData = document.getElementById('weather-data');
     const errorMessage = document.getElementById('error-message');
@@ -41,58 +55,98 @@ async function loadWeatherData(city) {
         const response = await fetch(`/weather?city=${encodeURIComponent(city)}`);
         const data = await response.json();
         
-        if (data.status === 0 && data.data) {
-            const w = data.data;
-            weatherData.innerHTML = `
-                <div class="weather-card">
-                    <div class="weather-header">
-                        <h2>${w.name}, ${w.sys.country}</h2>
-                        <p class="weather-description">${w.weather[0].description}</p>
-                    </div>
-                    
-                    <div class="weather-main">
-                        <div class="temperature">${Math.round(w.main.temp)}°C</div>
-                        <div class="feels-like">Ощущается как: ${Math.round(w.main.feels_like)}°C</div>
-                    </div>
-                    
-                    <div class="weather-details">
-                        <div class="detail-item">
-                            <span class="label">📊 Минимум/Максимум:</span>
-                            <span class="value">${Math.round(w.main.temp_min)}°C / ${Math.round(w.main.temp_max)}°C</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="label">💨 Ветер:</span>
-                            <span class="value">${w.wind.speed} м/с</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="label">💧 Влажность:</span>
-                            <span class="value">${w.main.humidity}%</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="label">📍 Координаты:</span>
-                            <span class="value">${w.coord.lat.toFixed(4)}, ${w.coord.lon.toFixed(4)}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            loading.classList.add('hidden');
-            weatherData.classList.remove('hidden');
-        } else {
-            throw new Error(data.error || 'Город не найден');
-        }
+        processWeatherResponse(data);
+        
     } catch (error) {
         loading.classList.add('hidden');
-        errorMessage.classList.remove('hidden');
-        errorMessage.innerHTML = `
-            <div class="error-card">
-                <h3>❌ Ошибка</h3>
-                <p>Не удалось загрузить данные для города "${city}"</p>
-                <p><strong>Причина:</strong> ${error.message}</p>
-                <a href="/" class="retry-btn">Попробовать другой город</a>
+        showError(`Ошибка загрузки: ${error.message}`);
+    }
+}
+
+async function loadWeatherByCoords(lat, lon) {
+    const loading = document.getElementById('loading');
+    const weatherData = document.getElementById('weather-data');
+    const errorMessage = document.getElementById('error-message');
+    
+    try {
+        loading.classList.remove('hidden');
+        weatherData.classList.add('hidden');
+        errorMessage.classList.add('hidden');
+        
+        const response = await fetch(`/weather?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
+        const data = await response.json();
+        
+        processWeatherResponse(data);
+        
+    } catch (error) {
+        loading.classList.add('hidden');
+        showError(`Ошибка загрузки: ${error.message}`);
+    }
+}
+
+function processWeatherResponse(data) {
+    const loading = document.getElementById('loading');
+    const weatherData = document.getElementById('weather-data');
+    const errorMessage = document.getElementById('error-message');
+    
+    if (data.status === 0 && data.data) {
+        const w = data.data;
+        weatherData.innerHTML = `
+            <div class="weather-card">
+                <div class="weather-header">
+                    <h2>${w.name}</h2>
+                    <p class="weather-description">${w.weather[0].description}</p>
+                </div>
+                
+                <div class="weather-main">
+                    <div class="temperature">${Math.round(w.main.temp)}°C</div>
+                    <div class="feels-like">Ощущается как: ${Math.round(w.main.feels_like)}°C</div>
+                </div>
+                
+                <div class="weather-details">
+                    <div class="detail-item">
+                        <span class="label">📊 Минимум/Максимум:</span>
+                        <span class="value">${Math.round(w.main.temp_min)}°C / ${Math.round(w.main.temp_max)}°C</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">💨 Ветер:</span>
+                        <span class="value">${w.wind.speed} м/с</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">💧 Влажность:</span>
+                        <span class="value">${w.main.humidity}%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">📍 Координаты:</span>
+                        <span class="value">${w.coord.lat.toFixed(2)}, ${w.coord.lon.toFixed(2)}</span>
+                    </div>
+                </div>
             </div>
         `;
+        
+        // Обновляем заголовок
+        document.getElementById('current-city').textContent = w.name;
+        
+        loading.classList.add('hidden');
+        weatherData.classList.remove('hidden');
+    } else {
+        throw new Error(data.error || 'Неизвестная ошибка');
     }
+}
+
+function showError(message) {
+    const loading = document.getElementById('loading');
+    const errorMessage = document.getElementById('error-message');
+    
+    loading.classList.add('hidden');
+    errorMessage.classList.remove('hidden');
+    errorMessage.innerHTML = `
+        <div class="error-card">
+            <h3>❌ Ошибка</h3>
+            <p>${message}</p>
+            <a href="/" class="retry-btn">Вернуться на главную</a>
+        </div>
+    `;
 }
 </script>
 
