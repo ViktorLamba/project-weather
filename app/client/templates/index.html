@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="weather-app">
+    <!-- Поиск по городу -->
+    <div class="search-section">
+        <h2>🔍 Поиск погоды по городу</h2>
+        <form id="weather-form" class="weather-form" action="/weather-page" method="GET">
+            <div class="input-group">
+                <input type="text" 
+                       id="city-input" 
+                       name="city" 
+                       placeholder="Введите название города (например: Moscow, London, Paris)...">
+                <button type="submit">🌎 Найти погоду</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Поиск по координатам -->
+    <div class="search-section">
+        <h2>📍 Поиск погоды по координатам</h2>
+        <form id="coordinates-form" class="weather-form" action="/weather-page" method="GET">
+            <div class="coordinates-group">
+                <div class="coord-inputs">
+                    <input type="text" 
+                           id="lat-input" 
+                           name="lat" 
+                           placeholder="Широта (например: 55.7558)"
+                           pattern="-?\d+(\.\d+)?" 
+                           title="Введите число для широты">
+                    <input type="text" 
+                           id="lon-input" 
+                           name="lon" 
+                           placeholder="Долгота (например: 37.6173)"
+                           pattern="-?\d+(\.\d+)?" 
+                           title="Введите число для долготы">
+                </div>
+                <button type="submit">📍 Найти по координатам</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="examples">
+        <h3>Популярные города:</h3>
+        <div class="example-cities">
+            <a href="/weather-page?city=Moscow" class="city-btn">Москва</a>
+            <a href="/weather-page?city=London" class="city-btn">Лондон</a>
+            <a href="/weather-page?city=Paris" class="city-btn">Париж</a>
+            <a href="/weather-page?city=New York" class="city-btn">Нью-Йорк</a>
+            <a href="/weather-page?city=Tokyo" class="city-btn">Токио</a>
+        </div>
+        
+        <h3 style="margin-top: 20px;">Примеры координат:</h3>
+        <div class="example-cities">
+            <a href="/weather-page?lat=55.7558&lon=37.6173" class="city-btn">📍 Москва</a>
+            <a href="/weather-page?lat=51.5074&lon=-0.1278" class="city-btn">📍 Лондон</a>
+            <a href="/weather-page?lat=48.8566&lon=2.3522" class="city-btn">📍 Париж</a>
+            <a href="/weather-page?lat=40.7128&lon=-74.0060" class="city-btn">📍 Нью-Йорк</a>
+            <a href="/weather-page?lat=35.6762&lon=139.6503" class="city-btn">📍 Токио</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

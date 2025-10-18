@@ -1,0 +1,27 @@
+[flake8]
+# Базовые настройки
+max-line-length = 120
+max-complexity = 15
+
+ignore = 
+    W503,
+    W504,
+    E731,
+    B006,
+
+exclude =
+    .git,
+    .gitignore,
+    Readme.md,
+    requirements.txt,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    .env,
+
+
+show-source = True
+statistics = True
+count = True
+format = default

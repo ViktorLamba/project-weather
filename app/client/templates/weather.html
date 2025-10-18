@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="weather-detail-page">
+    <div class="back-link">
+        <a href="/">← Назад к поиску</a>
+    </div>
+
+    <h1>🌤️ Погода: <span id="current-city">
+        {% if city and city != 'None' %}{{ city }}
+        {% elif lat and lon and lat != 'None' and lon != 'None' %}Координаты: {{ lat }}, {{ lon }}
+        {% else %}Загрузка...{% endif %}
+    </span></h1>
+
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Загружаем данные о погоде...</p>
+    </div>
+
+    <div id="weather-data" class="weather-data hidden">
+        <!-- Данные о погоде будут здесь -->
+    </div>
+
+    <div id="error-message" class="error-message hidden">
+        <!-- Ошибки будут здесь -->
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const city = "{{ city }}";
+    const lat = "{{ lat }}";
+    const lon = "{{ lon }}";
+    
+    // Определяем тип запроса
+    if (lat && lon && lat !== 'None' && lon !== 'None') {
+        loadWeatherByCoords(lat, lon);
+    } else if (city && city !== 'None') {
+        loadWeatherByCity(city);
+    } else {
+        showError('Не указаны параметры для поиска');
+    }
+});
+
+async function loadWeatherByCity(city) {
+    const loading = document.getElementById('loading');
+    const weatherData = document.getElementById('weather-data');
+    const errorMessage = document.getElementById('error-message');
+    
+    try {
+        loading.classList.remove('hidden');
+        weatherData.classList.add('hidden');
+        errorMessage.classList.add('hidden');
+        
+        const response = await fetch(`/weather?city=${encodeURIComponent(city)}`);
+        const data = await response.json();
+        
+        processWeatherResponse(data);
+        
+    } catch (error) {
+        loading.classList.add('hidden');
+        showError(`Ошибка загрузки: ${error.message}`);
+    }
+}
+
+async function loadWeatherByCoords(lat, lon) {
+    const loading = document.getElementById('loading');
+    const weatherData = document.getElementById('weather-data');
+    const errorMessage = document.getElementById('error-message');
+    
+    try {
+        loading.classList.remove('hidden');
+        weatherData.classList.add('hidden');
+        errorMessage.classList.add('hidden');
+        
+        const response = await fetch(`/weather?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
+        const data = await response.json();
+        
+        processWeatherResponse(data);
+        
+    } catch (error) {
+        loading.classList.add('hidden');
+        showError(`Ошибка загрузки: ${error.message}`);
+    }
+}
+
+function processWeatherResponse(data) {
+    const loading = document.getElementById('loading');
+    const weatherData = document.getElementById('weather-data');
+    const errorMessage = document.getElementById('error-message');
+    
+    if (data.status === 0 && data.data) {
+        const w = data.data;
+        weatherData.innerHTML = `
+            <div class="weather-card">
+                <div class="weather-header">
+                    <h2>${w.name}</h2>
+                    <p class="weather-description">${w.weather[0].description}</p>
+                </div>
+                
+                <div class="weather-main">
+                    <div class="temperature">${Math.round(w.main.temp)}°C</div>
+                    <div class="feels-like">Ощущается как: ${Math.round(w.main.feels_like)}°C</div>
+                </div>
+                
+                <div class="weather-details">
+                    <div class="detail-item">
+                        <span class="label">📊 Минимум/Максимум:</span>
+                        <span class="value">${Math.round(w.main.temp_min)}°C / ${Math.round(w.main.temp_max)}°C</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">💨 Ветер:</span>
+                        <span class="value">${w.wind.speed} м/с</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">💧 Влажность:</span>
+                        <span class="value">${w.main.humidity}%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">📍 Координаты:</span>
+                        <span class="value">${w.coord.lat.toFixed(2)}, ${w.coord.lon.toFixed(2)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Обновляем заголовок
+        document.getElementById('current-city').textContent = w.name;
+        
+        loading.classList.add('hidden');
+        weatherData.classList.remove('hidden');
+    } else {
+        throw new Error(data.error || 'Неизвестная ошибка');
+    }
+}
+
+function showError(message) {
+    const loading = document.getElementById('loading');
+    const errorMessage = document.getElementById('error-message');
+    
+    loading.classList.add('hidden');
+    errorMessage.classList.remove('hidden');
+    errorMessage.innerHTML = `
+        <div class="error-card">
+            <h3>❌ Ошибка</h3>
+            <p>${message}</p>
+            <a href="/" class="retry-btn">Вернуться на главную</a>
+        </div>
+    `;
+}
+</script>
+
+<style>
+.weather-detail-page {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.back-link {
+    margin-bottom: 20px;
+}
+
+.back-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.back-link a:hover {
+    text-decoration: underline;
+}
+
+.weather-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.weather-header h2 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.weather-description {
+    margin: 0;
+    color: #666;
+    text-transform: capitalize;
+}
+
+.weather-main {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.temperature {
+    font-size: 3em;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.feels-like {
+    color: #7f8c8d;
+    margin-top: 10px;
+}
+
+.weather-details {
+    border-top: 1px solid #ecf0f1;
+    padding-top: 20px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.label {
+    color: #666;
+}
+
+.value {
+    font-weight: bold;
+    color: #333;
+}
+
+.error-card {
+    background: #ffe6e6;
+    border: 1px solid #ffcccc;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+}
+
+.retry-btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
