@@ -1,8 +1,11 @@
 """Получение погоды."""
 from flask import Blueprint, jsonify, request, render_template
 import requests
+from sqlalchemy import create_engine, text
 
 weather = Blueprint('weather', __name__)
+
+db_engine = create_engine("postgresql://user:1@localhost:5432/postgres")
 
 # Координаты популярных городов
 CITY_COORDINATES = {
@@ -70,6 +73,23 @@ def get_weather():
                         'lon': lon_float
                     }
                 }
+                try:
+                    with db_engine.connect() as conn:
+                        conn.execute(text("""
+                        INSERT INTO weather_data(city_name, lat, lon, weather, temp, max_temp, min_temp, wind, humidity)
+                        VALUES (:city_name, :lat, :lon, :weather, :temp, :max_temp, :min_temp, :wind, :humidity)
+                        """).bindparams(city_name=city_name_from_coords,
+                                        lat=lat_float,
+                                        lon=lon_float,
+                                        weather=weather_data['weather_description'],
+                                        temp=weather_data['current_temp'],
+                                        max_temp=weather_data['max_temp'],
+                                        min_temp=weather_data['min_temp'],
+                                        wind=weather_data['wind_speed'],
+                                        humidity=65))
+                        conn.commit()
+                except Exception as e:
+                    return jsonify({f'status': 1, 'error': f'Ошибка подключения к базе данных:{e}'}), 500
 
                 return jsonify({'status': 0, 'data': formatted_data})
 
@@ -107,6 +127,25 @@ def get_weather():
                     'lon': city_coords['lon']
                 }
             }
+
+            try:
+                with db_engine.connect() as conn:
+                    conn.execute(text("""
+                    INSERT INTO weather_data(city_name, lat, lon, weather, temp, max_temp, min_temp, wind, humidity)
+                    VALUES (:city_name, :lat, :lon, :weather, :temp, :max_temp, :min_temp, :wind, :humidity)
+                    """).bindparams(city_name=city_coords['name'],
+                                    lat=city_coords['lat'],
+                                    lon=city_coords['lon'],
+                                    weather=weather_data['weather_description'],
+                                    temp=weather_data['current_temp'],
+                                    max_temp=weather_data['max_temp'],
+                                    min_temp=weather_data['min_temp'],
+                                    wind=weather_data['wind_speed'],
+                                    humidity=65))
+                    conn.commit()
+
+            except Exception as e:
+                return jsonify({'status': 1, 'error': f'Ошибка подключения к базе данных: {e}'}), 500
 
             return jsonify({'status': 0, 'data': formatted_data})
 
