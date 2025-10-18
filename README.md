@@ -28,6 +28,7 @@
 
 - **Backend**: Python, Flask
 - **Frontend**: HTML, CSS
+- **DateBase: PostgreSQL**
 - **API**: Open-Meteo API для получения данных о погоде
 
 ## 📦 Установка и запуск
@@ -49,7 +50,15 @@ $ source venv/bin/activate
 
 ### Установка зависимосткей
 
+```bash
 $ pip install -r requirements.txt 
+```
+
+### Запуск
+
+```bash
+$ venv/bin/python3 main.py   #точка входа
+```
 
 ##🏗️ Структура проекта
 ```bash
