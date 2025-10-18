@@ -7,8 +7,8 @@ weather = Blueprint('weather', __name__)
 
 db_engine = create_engine("postgresql://user:1@localhost:5432/postgres")
 
-# Координаты популярных городов
-CITY_COORDINATES = {
+# Координаты городов
+CITY_COORDINATES = {  # В идеале это перевести в БД, но ето долго
     'moscow': {'lat': 55.7558, 'lon': 37.6173, 'name': 'Москва', 'country': 'RU'},
     'london': {'lat': 51.5074, 'lon': -0.1278, 'name': 'Лондон', 'country': 'GB'},
     'paris': {'lat': 48.8566, 'lon': 2.3522, 'name': 'Париж', 'country': 'FR'},
@@ -21,7 +21,7 @@ CITY_COORDINATES = {
 }
 
 
-@weather.route('/weather-page', methods=['GET'])
+@weather.route('/weather-page')
 def weather_page():
     """Страница с фронтендом для просмотра погоды."""
     city = request.args.get('city')
