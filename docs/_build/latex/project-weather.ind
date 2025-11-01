@@ -1,0 +1,44 @@
+\begin{sphinxtheindex}
+\let\bigletter\sphinxstyleindexlettergroup
+\let\spxpagem \sphinxstyleindexpagemain
+\let\spxentry \sphinxstyleindexentry
+\let\spxextra \sphinxstyleindexextra
+
+  \bigletter A
+  \item \spxentry{app.weather.controller}
+    \subitem \spxentry{module}, \hyperpage{3}
+
+  \indexspace
+  \bigletter F
+  \item \spxentry{find\_city\_coordinates()}\spxextra{в модуле app.weather.controller}, 
+		\hyperpage{3}
+
+  \indexspace
+  \bigletter G
+  \item \spxentry{get\_city\_name()}\spxextra{в модуле app.weather.controller}, 
+		\hyperpage{3}
+  \item \spxentry{get\_weather()}\spxextra{в модуле app.weather.controller}, \hyperpage{4}
+  \item \spxentry{get\_weather\_description()}\spxextra{в модуле app.weather.controller}, 
+		\hyperpage{4}
+  \item \spxentry{get\_weather\_from\_openmeteo()}\spxextra{в модуле app.weather.controller}, 
+		\hyperpage{4}
+  \item \spxentry{get\_weather\_main()}\spxextra{в модуле app.weather.controller}, 
+		\hyperpage{4}
+
+  \indexspace
+  \bigletter I
+  \item \spxentry{index()}\spxextra{в модуле main}, \hyperpage{3}
+
+  \indexspace
+  \bigletter M
+  \item \spxentry{main}
+    \subitem \spxentry{module}, \hyperpage{3}
+  \item \spxentry{module}
+    \subitem \spxentry{app.weather.controller}, \hyperpage{3}
+    \subitem \spxentry{main}, \hyperpage{3}
+
+  \indexspace
+  \bigletter W
+  \item \spxentry{weather\_page()}\spxextra{в модуле app.weather.controller}, \hyperpage{5}
+
+\end{sphinxtheindex}
