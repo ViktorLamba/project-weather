@@ -4,21 +4,7 @@ import requests
 from sqlalchemy import create_engine, text
 
 weather = Blueprint('weather', __name__)
-
-db_engine = create_engine("postgresql://user:1@localhost:5432/postgres")
-
-# Координаты городов
-CITY_COORDINATES = {  # В идеале это перевести в БД, но ето долго
-    'moscow': {'lat': 55.7558, 'lon': 37.6173, 'name': 'Москва', 'country': 'RU'},
-    'london': {'lat': 51.5074, 'lon': -0.1278, 'name': 'Лондон', 'country': 'GB'},
-    'paris': {'lat': 48.8566, 'lon': 2.3522, 'name': 'Париж', 'country': 'FR'},
-    'berlin': {'lat': 52.5200, 'lon': 13.4050, 'name': 'Берлин', 'country': 'DE'},
-    'tokyo': {'lat': 35.6762, 'lon': 139.6503, 'name': 'Токио', 'country': 'JP'},
-    'new york': {'lat': 40.7128, 'lon': -74.0060, 'name': 'Нью-Йорк', 'country': 'US'},
-    'petersburg': {'lat': 59.9311, 'lon': 30.3609, 'name': 'Санкт-Петербург', 'country': 'RU'},
-    'sochi': {'lat': 43.5855, 'lon': 39.7231, 'name': 'Сочи', 'country': 'RU'},
-    'kazan': {'lat': 55.7961, 'lon': 49.1064, 'name': 'Казань', 'country': 'RU'}
-}
+db_engine = create_engine("postgresql://weather_user:weather_pass@localhost:5431/weather_db")
 
 
 @weather.route('/weather-page')
@@ -98,16 +84,16 @@ def get_weather():
 
         # Если передан город, ищем по названию
         elif city_name and city_name != 'None':
-            city_coords = find_city_coordinates(city_name)
-            if not city_coords:
+            lat, lon = find_city_coordinates(city_name)
+            if not (lat and lon):
                 return jsonify({'status': 1, 'error': f'Город "{city_name}" не найден'}), 404
 
-            weather_data = get_weather_from_openmeteo(city_coords['lat'],
-                                                      city_coords['lon'])
+            weather_data = get_weather_from_openmeteo(lat,
+                                                      lon)
 
             formatted_data = {
-                'name': city_coords['name'],
-                'sys': {'country': city_coords['country']},
+                'name': city_name,
+                # 'sys': {'country': city_coords['country']},
                 'main': {
                     'temp': weather_data['current_temp'],
                     'feels_like': weather_data['current_temp'],
@@ -123,8 +109,8 @@ def get_weather():
                     'speed': weather_data['wind_speed']
                 },
                 'coord': {
-                    'lat': city_coords['lat'],
-                    'lon': city_coords['lon']
+                    'lat': lat,
+                    'lon': lon
                 }
             }
 
@@ -133,9 +119,9 @@ def get_weather():
                     conn.execute(text("""
                     INSERT INTO weather_data(city_name, lat, lon, weather, temp, max_temp, min_temp, wind, humidity)
                     VALUES (:city_name, :lat, :lon, :weather, :temp, :max_temp, :min_temp, :wind, :humidity)
-                    """).bindparams(city_name=city_coords['name'],
-                                    lat=city_coords['lat'],
-                                    lon=city_coords['lon'],
+                    """).bindparams(city_name=city_name,
+                                    lat=lat,
+                                    lon=lon,
                                     weather=weather_data['weather_description'],
                                     temp=weather_data['current_temp'],
                                     max_temp=weather_data['max_temp'],
@@ -157,15 +143,38 @@ def get_weather():
 
 
 def find_city_coordinates(s_city):
-    """Поиск координат города по названию."""
+    """Поиск координат города по названию с использованием Open-Meteo API."""
     if not s_city or s_city == 'None':
         return None
 
-    city_lower = s_city.lower().strip()
+    city_name = s_city.lower().strip()
 
-    for city_key, coords in CITY_COORDINATES.items():
-        if city_lower in city_key or city_key in city_lower:
-            return coords
+    try:
+        url = "https://geocoding-api.open-meteo.com/v1/search"
+        params = {
+            'name': city_name,
+            'count': 1,
+            'language': 'ru',
+            'format': 'json'
+        }
+
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+
+        data = response.json()
+
+        if 'results' in data and len(data['results']) > 0:
+            city_data = data['results'][0]
+            lat = city_data.get('latitude')
+            lon = city_data.get('longitude')
+
+            if lat is not None and lon is not None:
+                return (lat, lon)
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка при запросе к Open-Meteo API: {e}")
+    except (KeyError, ValueError, TypeError) as e:
+        print(f"Ошибка при обработке данных от API: {e}")
 
     return None
 
