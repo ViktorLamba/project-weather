@@ -1,0 +1,12 @@
+\indexentry{module@\spxentry{module}!main@\spxentry{main}|hyperpage}{3}
+\indexentry{main@\spxentry{main}!module@\spxentry{module}|hyperpage}{3}
+\indexentry{index() (в модуле main)@\spxentry{index()}\spxextra{в модуле main}|hyperpage}{3}
+\indexentry{module@\spxentry{module}!app.weather.controller@\spxentry{app.weather.controller}|hyperpage}{3}
+\indexentry{app.weather.controller@\spxentry{app.weather.controller}!module@\spxentry{module}|hyperpage}{3}
+\indexentry{find\_city\_coordinates() (в модуле app.weather.controller)@\spxentry{find\_city\_coordinates()}\spxextra{в модуле app.weather.controller}|hyperpage}{3}
+\indexentry{get\_city\_name() (в модуле app.weather.controller)@\spxentry{get\_city\_name()}\spxextra{в модуле app.weather.controller}|hyperpage}{3}
+\indexentry{get\_weather() (в модуле app.weather.controller)@\spxentry{get\_weather()}\spxextra{в модуле app.weather.controller}|hyperpage}{4}
+\indexentry{get\_weather\_description() (в модуле app.weather.controller)@\spxentry{get\_weather\_description()}\spxextra{в модуле app.weather.controller}|hyperpage}{4}
+\indexentry{get\_weather\_from\_openmeteo() (в модуле app.weather.controller)@\spxentry{get\_weather\_from\_openmeteo()}\spxextra{в модуле app.weather.controller}|hyperpage}{4}
+\indexentry{get\_weather\_main() (в модуле app.weather.controller)@\spxentry{get\_weather\_main()}\spxextra{в модуле app.weather.controller}|hyperpage}{4}
+\indexentry{weather\_page() (в модуле app.weather.controller)@\spxentry{weather\_page()}\spxextra{в модуле app.weather.controller}|hyperpage}{5}

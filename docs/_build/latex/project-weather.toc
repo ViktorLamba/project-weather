@@ -1,0 +1,13 @@
+\babel@toc {russian}{}\relax 
+\contentsline {chapter}{\numberline {1}Модуль Project\sphinxhyphen {}weather}{3}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Модуль app.weather.controller}{3}{section.1.1}%
+\contentsline {chapter}{\numberline {2}Быстрый старт}{7}{chapter.2}%
+\contentsline {chapter}{\numberline {3}Основные возможности}{9}{chapter.3}%
+\contentsline {chapter}{\numberline {4}API Endpoints}{11}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Примеры использования API}{13}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Структура проекта}{15}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Используемые технологии}{17}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Дополнительная информация}{19}{chapter.8}%
+\contentsline {chapter}{\numberline {9}Индексы и поиск}{21}{chapter.9}%
+\contentsline {chapter}{Содержание модулей Python}{23}{section*.11}%
+\contentsline {chapter}{Алфавитный указатель}{25}{section*.12}%
