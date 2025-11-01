@@ -9,7 +9,16 @@ db_engine = create_engine("postgresql://weather_user:weather_pass@localhost:5431
 
 @weather.route('/weather-page')
 def weather_page():
-    """Страница с фронтендом для просмотра погоды."""
+    """Отображает страницу с погодой.
+
+    Args:
+        city (str, optional): Название города.
+        lat (str, optional): Широта.
+        lon (str, optional): Долгота.
+
+    Returns:
+        Response: HTML-страница weather.html с переданными параметрами.
+    """
     city = request.args.get('city')
     lat = request.args.get('lat')
     lon = request.args.get('lon')
@@ -19,7 +28,21 @@ def weather_page():
 
 @weather.route('/weather', methods=['GET'])
 def get_weather():
-    """Получение погоды для заданного города или координат."""
+    """Получает данные о погоде по названию города или координатам.
+
+    Args:
+        city (str, optional): Название города.
+        lat (str, optional): Широта.
+        lon (str, optional): Долгота.
+
+    Returns:
+        Response: JSON с данными о погоде или ошибкой.
+
+    Raises:
+        400: Неверные параметры запроса
+        404: Город не найден
+        500: Ошибка сервера
+    """
     try:
         city_name = request.args.get('city')
         lat = request.args.get('lat')
@@ -93,7 +116,6 @@ def get_weather():
 
             formatted_data = {
                 'name': city_name,
-                # 'sys': {'country': city_coords['country']},
                 'main': {
                     'temp': weather_data['current_temp'],
                     'feels_like': weather_data['current_temp'],
@@ -143,7 +165,14 @@ def get_weather():
 
 
 def find_city_coordinates(s_city):
-    """Поиск координат города по названию с использованием Open-Meteo API."""
+    """Поиск координат города по названию.
+
+    Args:
+        s_city (str): Название города.
+
+    Returns:
+        tuple: (широта, долгота) или None если город не найден.
+    """
     if not s_city or s_city == 'None':
         return None
 
@@ -180,7 +209,18 @@ def find_city_coordinates(s_city):
 
 
 def get_weather_from_openmeteo(lat, lon):
-    """Получение погоды от Open-Meteo API."""
+    """Получение данных о погоде по координатам.
+
+    Args:
+        lat (float): Широта.
+        lon (float): Долгота.
+
+    Returns:
+        dict: Данные о погоде.
+
+    Raises:
+        Exception: Ошибка получения данных о погоде.
+    """
     try:
         url = "https://api.open-meteo.com/v1/forecast"
         params = {
@@ -215,7 +255,15 @@ def get_weather_from_openmeteo(lat, lon):
 
 
 def get_city_name(lat, lon):
-    """Получение названия города по координатам."""
+    """Получение названия города по координатам.
+    
+    Args:
+        lat (float): Широта.
+        lon (float): Долгота.
+        
+    Returns:
+        str: Название города или строка с координатами.
+    """
     try:
         url = "https://nominatim.openstreetmap.org/reverse"
         params = {
@@ -268,7 +316,14 @@ def get_city_name(lat, lon):
 
 
 def get_weather_description(code):
-    """Преобразуем код погоды в описание на русском."""
+    """Преобразует код погоды в текстовое описание.
+
+    Args:
+        code (int): Код погоды от Open-Meteo.
+
+    Returns:
+        str: Описание погоды на русском языке.
+    """
     weather_descriptions = {
         0: 'Ясно',
         1: 'Преимущественно ясно',
@@ -289,7 +344,14 @@ def get_weather_description(code):
 
 
 def get_weather_main(code):
-    """Преобразуем код погоды в основную категорию."""
+    """Преобразует код погоды в основную категорию.
+
+    Args:
+        code (int): Код погоды от Open-Meteo.
+
+    Returns:
+        str: Основная категория погоды на английском.
+    """
     weather_mapping = {
         0: 'Clear',
         1: 'Clear',
