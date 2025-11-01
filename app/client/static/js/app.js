@@ -13,7 +13,6 @@ function searchWeather() {
         <div class="loading">Загрузка данных для ${city}...</div>
     `;
     
-    // Здесь будет AJAX запрос к вашему API
     setTimeout(() => {
         weatherResult.innerHTML = `
             <div class="weather-card">

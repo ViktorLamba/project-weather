@@ -11,8 +11,13 @@ app.register_blueprint(weather)
 
 @app.route('/')
 def index():
+    """Отображает главную страницу проекта.
+
+    Returns:
+        Response: HTML-страница index.html
+    """
     return render_template('index.html')
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
