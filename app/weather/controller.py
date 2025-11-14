@@ -98,7 +98,7 @@ def get_weather():
                                         humidity=65))
                         conn.commit()
                 except Exception as e:
-                    return jsonify({f'status': 1, 'error': f'Ошибка подключения к базе данных:{e}'}), 500
+                    return jsonify({f'status': 1, 'error': f'Ошибка подключения к базе данных:{e}'}), 400
 
                 return jsonify({'status': 0, 'data': formatted_data})
 
@@ -107,9 +107,11 @@ def get_weather():
 
         # Если передан город, ищем по названию
         elif city_name and city_name != 'None':
-            lat, lon = find_city_coordinates(city_name)
-            if not (lat and lon):
-                return jsonify({'status': 1, 'error': f'Город "{city_name}" не найден'}), 404
+            coords = find_city_coordinates(city_name)
+            if not coords:
+                return jsonify({'status': 1, 'error': f'Город "{city_name}" не найден'}), 400
+
+            lat, lon = coords
 
             weather_data = get_weather_from_openmeteo(lat,
                                                       lon)
@@ -153,7 +155,7 @@ def get_weather():
                     conn.commit()
 
             except Exception as e:
-                return jsonify({'status': 1, 'error': f'Ошибка подключения к базе данных: {e}'}), 500
+                return jsonify({'status': 1, 'error': f'Ошибка подключения к базе данных: {e}'}), 400
 
             return jsonify({'status': 0, 'data': formatted_data})
 
@@ -161,7 +163,7 @@ def get_weather():
             return jsonify({'status': 1, 'error': 'Укажите название города или координаты'}), 400
 
     except Exception as e:
-        return jsonify({'status': 1, 'error': str(e)}), 500
+        return jsonify({'status': 1, 'error': str(e)}), 400
 
 
 def find_city_coordinates(s_city):
